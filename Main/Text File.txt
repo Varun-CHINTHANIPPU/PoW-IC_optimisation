@@ -1,0 +1,5 @@
+✅ single canister miner
+✅ chunked execution
+✅ continuation (return next nonce)
+✅ mid-state optimization
+✅ static parallelism later (coordinator → fixed ranges)
