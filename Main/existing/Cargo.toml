@@ -1,5 +1,10 @@
 [workspace]
-members = ["src/chain_controller","src/coordinator",
-    "src/existing_backend"
-, "src/metrics", "src/refueler", "src/validator"]
+members = [
+    "src/chain_controller",
+    "src/coordinator",
+    "src/existing_backend",
+    "src/refueler",
+    "src/validator",
+]
+
 resolver = "2"

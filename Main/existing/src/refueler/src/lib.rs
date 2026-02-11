@@ -1,9 +1,10 @@
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize};
 use ic_cdk::{update, query};
 use ic_cdk::api::time;
 use ic_cdk::api::management_canister::main::{
     canister_status, CanisterIdRecord, CanisterStatusResponse,
 };
+use candid::Principal;
 
 use std::cell::RefCell;
 
@@ -180,7 +181,7 @@ async fn run_once() {
 
                 report.push(CanisterHealth {
                     canister: entry.canister,
-                    cycles,
+                    cycles: cycles.0.clone().try_into().unwrap_or(0u128),
                     low_watermark: entry.low_watermark,
                     critical_watermark: entry.critical_watermark,
                     is_low,

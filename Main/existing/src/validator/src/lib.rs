@@ -1,7 +1,9 @@
 // validator/src/lib.rs - Complete PoW validation
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize};
 use ic_cdk::{caller, query, update};
 use sha2::{Digest, Sha256};
+use candid::Principal;
+
 
 // ------------------------------------------------------------
 // Types

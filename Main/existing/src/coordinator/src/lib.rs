@@ -1,15 +1,11 @@
 mod scheduler;
 
 use std::cell::RefCell;
-
 use candid::{CandidType, Deserialize, Principal};
-use ic_cdk::{update, heartbeat};
+use ic_cdk::{update, heartbeat, query};  // Added query here
 use ic_cdk::api::call::call;
-
 use sha2::{Digest, Sha256};
-// Add at top:
-use crate::MiningStatus;
-use futures::future::join_all;
+
 use crate::scheduler::{start_scheduler, stop_scheduler, tick};
 use crate::scheduler::{stats as scheduler_stats, SchedulerStats};
 
@@ -209,3 +205,4 @@ pub async fn assign_one_chunk(
 pub fn get_scheduler_stats() -> Option<SchedulerStats> {
     scheduler_stats()
 }
+

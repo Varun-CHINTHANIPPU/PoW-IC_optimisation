@@ -1,15 +1,16 @@
 // advanced.rs - Enhanced with cache and metrics
 use std::cell::RefCell;
+use candid::Principal;
 
 use candid::{CandidType, Deserialize};
 use ic_cdk::{query, update};
 use ic_cdk::api::time;
-use ic_cdk::api::{canister_cycle_balance, instruction_counter};
+use ic_cdk::api::{canister_balance, instruction_counter};
 
 use crate::{mine_chunk_with_midstate, MiningStatus};
 
-mod cache;
-mod metrics;
+use crate::cache;
+use crate::metrics;
 
 pub use cache::{get_cache_stats, clear_cache, is_cached};
 pub use metrics::{get_metrics, get_metrics_summary, reset_metrics, export_metrics_csv};
@@ -203,7 +204,7 @@ fn adaptive_chunk_size(difficulty: u32) -> u64 {
     const MIN: u64 = 20_000;
     const MAX: u64 = 2_000_000;
 
-    let cycles = canister_cycle_balance();
+    let cycles = canister_balance();
 
     // Easier difficulty → larger chunks
     let diff_factor = if difficulty < 24 {
@@ -213,7 +214,7 @@ fn adaptive_chunk_size(difficulty: u32) -> u64 {
     };
 
     // More cycles → larger chunks
-    let cycle_factor: u64 = ((cycles / 100_000_000_000u128).clamp(1, 5)) as u64;
+    let cycle_factor: u64 = ((cycles / 100_000_000_000u64).clamp(1, 5)) as u64;
 
     let mut size = BASE.saturating_mul(diff_factor).saturating_mul(cycle_factor);
 

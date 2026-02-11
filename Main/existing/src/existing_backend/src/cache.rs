@@ -1,6 +1,7 @@
 // cache.rs - LRU cache for mined blocks
 use std::cell::RefCell;
 use std::collections::HashMap;
+use candid::Principal;
 
 use candid::{CandidType, Deserialize};
 use ic_cdk::{query, update};

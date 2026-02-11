@@ -2,14 +2,13 @@ use ic_cdk::{query, update};
 use ic_cdk::api::time;
 use candid::CandidType;
 use serde::Deserialize;
-
+use candid::Principal;
 use sha2::{Sha256, Digest};
 use sha2::digest::FixedOutput;
 
-mod advanced;
 mod cache;
 mod metrics;
-
+mod advanced;
 
 pub use advanced::{
     start_advanced_mining,

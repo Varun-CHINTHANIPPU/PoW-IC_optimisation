@@ -7,9 +7,9 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-ic-cdk = "0.19"
-ic-cdk-macros = "0.19"
-candid = "0.10"
+candid = "0.10.21"
+ic-cdk = "0.13"
+ic-cdk-macros = "0.9"
 serde = { version = "1", features = ["derive"] }
 sha2 = "0.10"
 hex = "0.4"

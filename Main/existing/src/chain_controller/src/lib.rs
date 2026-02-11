@@ -1,7 +1,9 @@
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize};
 use ic_cdk::{query, update};
 use ic_cdk::api::caller;
 use std::cell::RefCell;
+use candid::Principal;
+
 
 // ------------------------------------------------------------
 // Public chain state

@@ -1,5 +1,6 @@
 // metrics.rs - Comprehensive performance metrics
 use std::cell::RefCell;
+use candid::Principal;
 
 use candid::{CandidType, Deserialize};
 use ic_cdk::{query, update};
