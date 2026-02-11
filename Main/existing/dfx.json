@@ -1,0 +1,49 @@
+{
+  "canisters": {
+    "existing_backend": {
+      "type": "rust",
+      "package": "existing_backend",
+      "candid": "src/existing_backend/existing_backend.did"
+    },
+
+    "miner1": {
+      "type": "rust",
+      "package": "existing_backend",
+      "candid": "src/existing_backend/existing_backend.did"
+    },
+
+    "miner2": {
+      "type": "rust",
+      "package": "existing_backend",
+      "candid": "src/existing_backend/existing_backend.did"
+    },
+
+    "coordinator": {
+      "type": "rust",
+      "package": "coordinator",
+      "candid": "src/coordinator/coordinator.did"
+    },
+
+    "validator": {
+      "type": "rust",
+      "package": "validator",
+      "candid": "src/validator/validator.did",
+      "wasm": "target/wasm32-unknown-unknown/release/validator.wasm"
+    },
+
+    "refueler": {
+      "type": "rust",
+      "package": "refueler",
+      "candid": "src/refueler/refueler.did"
+    },
+
+    "chain_controller": {
+      "type": "rust",
+      "package": "chain_controller",
+      "candid": "src/chain_controller/chain_controller.did"
+    }
+
+  },
+
+  "version": 1
+}

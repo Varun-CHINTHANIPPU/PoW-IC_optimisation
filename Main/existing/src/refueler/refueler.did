@@ -1,0 +1,16 @@
+type WatchTarget = record {
+  canister : principal;
+  min_cycles : nat;
+  topup_cycles : nat;
+};
+
+type RefillOrder = record {
+  canister : principal;
+  cycles : nat;
+};
+
+service : {
+  register_target : (principal, nat, nat) -> ();
+  local_cycles : () -> (nat) query;
+  pending_refills : (vec record { principal; nat }) -> (vec RefillOrder) query;
+}

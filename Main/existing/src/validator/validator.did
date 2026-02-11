@@ -1,0 +1,41 @@
+type Block = record {
+  height: nat64;
+  prev_hash: text;
+  block_data: text;
+  nonce: nat64;
+  difficulty: nat32;
+  hash: text;
+  timestamp: nat64;
+  miner: opt principal;
+};
+
+type ValidationResult = record {
+  valid: bool;
+  reason: opt text;
+};
+
+type BatchValidationResult = record {
+  total: nat64;
+  valid: nat64;
+  invalid: nat64;
+  invalid_indices: vec nat64;
+};
+
+service : {
+  "verify_pow": (text, nat64, nat32) -> (ValidationResult) query;
+  "verify_block": (Block) -> (ValidationResult) query;
+  "verify_chain_segment": (vec Block) -> (ValidationResult) query;
+
+  "calculate_difficulty_adjustment": (
+    nat32,        // current_difficulty
+    nat64,        // target_block_time_seconds
+    vec nat64     // actual_block_times_seconds
+  ) -> (nat32) query;
+
+  "batch_verify_pow": (
+    vec record { text; nat64; nat32 }
+  ) -> (BatchValidationResult) query;
+
+  "compute_hash": (text, nat64) -> (text) query;
+  "check_difficulty_level": (text, nat32) -> (bool) query;
+}

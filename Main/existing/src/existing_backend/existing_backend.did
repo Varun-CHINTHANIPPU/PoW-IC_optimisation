@@ -1,0 +1,63 @@
+service : {
+  // Basic mining
+  "mine_chunk_naive": (text, nat32, nat64, nat64) -> (variant {
+    Found: record { hash: text; nonce: nat64 };
+    Continue: record { next_nonce: nat64 };
+  }, nat64);
+
+  "mine_chunk_with_midstate": (text, nat32, nat64, nat64) -> (variant {
+    Found: record { hash: text; nonce: nat64 };
+    Continue: record { next_nonce: nat64 };
+  }, nat64);
+
+  // Advanced mining
+  "start_advanced_mining": (text, nat32, nat64, nat64) -> ();
+  "stop_advanced_mining": () -> ();
+  "get_advanced_status": () -> (opt record {
+    running: bool;
+    block_data: text;
+    difficulty: nat32;
+    next_nonce: nat64;
+    chunk_size: nat64;
+    total_attempts: nat64;
+    started_at: nat64;
+  }) query;
+
+  // Cache
+  "get_cache_stats": () -> (record {
+    size: nat64;
+    capacity: nat64;
+    total_hits: nat64;
+    hit_rate: float64;
+  }) query;
+
+  "clear_cache": () -> ();
+  "is_cached": (text, nat32) -> (bool) query;
+
+  // Metrics
+  "get_metrics_summary": () -> (record {
+    total_chunks: nat64;
+    total_hashes: nat64;
+    solutions_found: nat64;
+    cache_hit_rate: float64;
+    early_termination_rate: float64;
+    avg_time_per_chunk_ms: nat64;
+    avg_hashes_per_chunk: nat64;
+    avg_instructions_per_hash: nat64;
+    hashes_per_second: nat64;
+  }) query;
+
+  "export_metrics_csv": () -> (text) query;
+  "reset_metrics": () -> ();
+
+  // Benchmarking
+  "benchmark_naive_chunk": (text, nat32, nat64, nat64) -> (variant {
+    Found: record { hash: text; nonce: nat64 };
+    Continue: record { next_nonce: nat64 };
+  }, nat64, nat64);
+
+  "benchmark_midstate_chunk": (text, nat32, nat64, nat64) -> (variant {
+    Found: record { hash: text; nonce: nat64 };
+    Continue: record { next_nonce: nat64 };
+  }, nat64, nat64);
+}

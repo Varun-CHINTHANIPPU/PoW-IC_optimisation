@@ -1,0 +1,52 @@
+type MiningResult = record {
+  found: bool;
+  nonce: nat64;
+  hash: text;
+};
+
+type SchedulerStats = record {
+  running: bool;
+  total_miners: nat64;
+  idle_miners: nat64;
+  busy_miners: nat64;
+  failed_miners: nat64;
+  total_chunks_assigned: nat64;
+  next_nonce: nat64;
+  solution: opt record { nat64; text };
+  uptime_seconds: nat64;
+};
+
+service : {
+  // VRF-based parallel mining
+  "start_vrf_parallel_mining": (
+    vec principal,  // miners
+    text,           // block_data
+    nat32,          // difficulty
+    text,           // prev_block_hash
+    nat64,          // round
+    nat64,          // base_start
+    nat64           // range_per_miner
+  ) -> (opt MiningResult);
+
+  // Dynamic mining
+  "start_dynamic_mining": (
+    vec principal,  // miners
+    text,           // block_data
+    nat32,          // difficulty
+    nat64,          // start_nonce
+    nat64           // chunk_size
+  ) -> ();
+
+  "stop_dynamic_mining": () -> ();
+
+  "get_scheduler_stats": () -> (opt SchedulerStats) query;
+
+  // Single miner assignment
+  "assign_one_chunk": (
+    principal,      // miner
+    text,           // block_data
+    nat32,          // difficulty
+    nat64,          // start_nonce
+    nat64           // chunk_size
+  ) -> (opt MiningResult);
+}
