@@ -1,0 +1,10 @@
+WARN: Cannot fetch Candid interface for submit_valid_block, sending arguments with inferred types.
+[31mError: (B[mFailed update call.
+[33mCaused by: (B[mThe replica returned a rejection error: reject code CanisterError, reject message Error from Canister uxrrr-q7777-77774-qaaaq-cai: Canister called `ic0.trap` with message: 'only validator can submit blocks'
+Canister Backtrace:
+ic_cdk::api::trap
+std::thread::local::LocalKey<T>::with
+ic_cdk_executor::spawn
+canister_update submit_valid_block
+.
+Consider gracefully handling failures from this canister or altering the canister to handle exceptions. See documentation: https://internetcomputer.org/docs/current/references/execution-errors#trapped-explicitly, error code Some("IC0503")

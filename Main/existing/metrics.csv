@@ -1,0 +1,3 @@
+(
+  "metric,value\ntotal_chunks,3\ntotal_hashes,134359\nsolutions_found,3\ncache_hits,1\ncache_misses,3\ncache_hit_rate_percent,25.00\nearly_terminations,0\nearly_termination_rate_percent,0.00\navg_time_per_chunk_ms,0\navg_hashes_per_chunk,44786\navg_instructions_per_hash,5843\nhashes_per_second,0\nmin_instructions_per_hash,5840\nmax_instructions_per_hash,5846\n",
+)

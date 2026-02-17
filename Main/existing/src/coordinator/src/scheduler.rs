@@ -1,12 +1,8 @@
-// Enhanced scheduler.rs with broadcast stop and metrics
 use std::cell::RefCell;
 
-use candid::Principal;
-
+use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::api::{call::call, time};
 use ic_cdk::spawn;
-
-use crate::MiningStatus;
 
 const ASSIGN_TIMEOUT_NS: u64 = 10_000_000_000; // 10s
 const MAX_FAILURES: u32 = 3;
@@ -27,7 +23,7 @@ pub struct CoordinatorState {
     pub chunk_size: u64,
     pub running: bool,
     pub rr_cursor: usize,
-    pub solution_found: Option<(u64, String)>, // (nonce, hash)
+    pub solution_found: Option<(u64, String)>,
     pub total_chunks_assigned: u64,
     pub started_at: u64,
 }
@@ -40,11 +36,7 @@ thread_local! {
 // Public API
 // ------------------------------------------------------------
 
-pub fn start_scheduler(
-    miners: Vec<Principal>,
-    start_nonce: u64,
-    chunk_size: u64,
-) {
+pub fn start_scheduler(miners: Vec<Principal>, start_nonce: u64, chunk_size: u64) {
     let slots = miners
     .into_iter()
     .map(|p| MinerSlot {
@@ -80,7 +72,7 @@ pub fn stop_scheduler() {
 }
 
 // ------------------------------------------------------------
-// Heartbeat tick
+// Heartbeat tick - called every heartbeat
 // ------------------------------------------------------------
 
 pub fn tick(block_data: String, difficulty: u32) {
@@ -96,18 +88,18 @@ pub fn tick(block_data: String, difficulty: u32) {
 async fn schedule_once(block_data: String, difficulty: u32) {
     let now = time();
 
-    // Check if already found solution
+    // Stop if solution already found
     let already_solved = STATE.with(|cell| {
         cell.borrow()
         .as_ref()
         .and_then(|st| st.solution_found.as_ref())
         .is_some()
     });
-
     if already_solved {
         return;
     }
 
+    // Pick next idle miner
     let picked = STATE.with(|cell| {
         let mut st = cell.borrow_mut();
         let st = st.as_mut()?;
@@ -120,9 +112,9 @@ async fn schedule_once(block_data: String, difficulty: u32) {
         for m in st.miners.iter_mut() {
             if m.busy && now.saturating_sub(m.assigned_at) > ASSIGN_TIMEOUT_NS {
                 ic_cdk::println!(
-                    "Miner {} timeout (was busy for {}s)",
-                                 m.id,
-                                 (now - m.assigned_at) / 1_000_000_000
+                    "Miner {} timeout after {}s",
+                    m.id,
+                    (now - m.assigned_at) / 1_000_000_000
                 );
                 m.busy = false;
                 m.assigned_at = 0;
@@ -130,7 +122,7 @@ async fn schedule_once(block_data: String, difficulty: u32) {
             }
         }
 
-        // Round-robin idle miner selection
+        // Round-robin selection
         let n = st.miners.len();
         for _ in 0..n {
             let i = st.rr_cursor % n;
@@ -138,30 +130,22 @@ async fn schedule_once(block_data: String, difficulty: u32) {
 
             let slot = &mut st.miners[i];
 
-            if slot.busy {
-                continue;
-            }
+            if slot.busy { continue; }
 
             if slot.failures >= MAX_FAILURES {
-                ic_cdk::println!(
-                    "Miner {} disabled (failures={})",
-                                 slot.id,
-                                 slot.failures
-                );
+                ic_cdk::println!("Miner {} disabled (failures={})", slot.id, slot.failures);
                 continue;
             }
 
             let start = st.next_nonce;
             st.next_nonce += st.chunk_size;
             st.total_chunks_assigned += 1;
-
             slot.busy = true;
             slot.assigned_at = now;
             slot.total_chunks += 1;
 
             return Some((i, slot.id, start, st.chunk_size));
         }
-
         None
     });
 
@@ -170,63 +154,52 @@ async fn schedule_once(block_data: String, difficulty: u32) {
         None => return,
     };
 
-    // Call miner
-    let result = call::<(String, u32, u64, u64), ((MiningStatus, u64),)>(
+    // Call mine_chunk_simple - returns (found, nonce, hash, attempts)
+    // Using primitive types avoids ALL Candid variant encoding issues
+    let result = call::<(String, u32, u64, u64), (bool, u64, String, u64)>(
         miner,
-        "mine_chunk_with_midstate",
+        "mine_chunk_simple",
         (block_data.clone(), difficulty, start, size),
     )
     .await;
 
     match result {
-        Ok(((status, _attempts),)) => {
-            match status {
-                MiningStatus::Found { nonce, hash } => {
-                    ic_cdk::println!(
-                        "✅ SOLUTION FOUND by {} | nonce={} | hash={}",
-                        miner,
-                        nonce,
-                        hash
-                    );
+        Ok((found, nonce, hash, _attempts)) => {
+            if found {
+                ic_cdk::println!(
+                    "✅ SOLUTION FOUND by {} | nonce={} | hash={}",
+                    miner, nonce, hash
+                );
 
-                    // Store solution and stop
-                    STATE.with(|s| {
-                        if let Some(st) = s.borrow_mut().as_mut() {
-                            st.solution_found = Some((nonce, hash.clone()));
-                            st.running = false;
-
-                            // Mark miner as idle
-                            if let Some(slot) = st.miners.get_mut(slot_index) {
-                                slot.busy = false;
-                                slot.successful_chunks += 1;
-                            }
+                STATE.with(|s| {
+                    if let Some(st) = s.borrow_mut().as_mut() {
+                        st.solution_found = Some((nonce, hash.clone()));
+                        st.running = false;
+                        if let Some(slot) = st.miners.get_mut(slot_index) {
+                            slot.busy = false;
+                            slot.successful_chunks += 1;
                         }
-                    });
+                    }
+                });
 
-                    // Broadcast stop to all miners
-                    broadcast_stop().await;
+                broadcast_stop().await;
 
-                    return;
-                }
-
-                MiningStatus::Continue { .. } => {
-                    // No solution in this chunk - mark miner idle
-                    STATE.with(|s| {
-                        if let Some(st) = s.borrow_mut().as_mut() {
-                            if let Some(slot) = st.miners.get_mut(slot_index) {
-                                slot.busy = false;
-                                slot.assigned_at = 0;
-                                slot.successful_chunks += 1;
-                            }
+            } else {
+                // No solution found in this chunk - mark miner idle
+                STATE.with(|s| {
+                    if let Some(st) = s.borrow_mut().as_mut() {
+                        if let Some(slot) = st.miners.get_mut(slot_index) {
+                            slot.busy = false;
+                            slot.assigned_at = 0;
+                            slot.successful_chunks += 1;
                         }
-                    });
-                }
+                    }
+                });
             }
         }
 
         Err(e) => {
             ic_cdk::println!("❌ Miner {} call failed: {:?}", miner, e);
-
             STATE.with(|s| {
                 if let Some(st) = s.borrow_mut().as_mut() {
                     if let Some(slot) = st.miners.get_mut(slot_index) {
@@ -241,7 +214,7 @@ async fn schedule_once(block_data: String, difficulty: u32) {
 }
 
 // ------------------------------------------------------------
-// Broadcast stop signal to all miners
+// Broadcast stop to all miners
 // ------------------------------------------------------------
 
 async fn broadcast_stop() {
@@ -255,7 +228,6 @@ async fn broadcast_stop() {
     ic_cdk::println!("📢 Broadcasting stop to {} miners", miners.len());
 
     for miner in miners {
-        // Try to stop advanced mining if it exists
         let _ = call::<(), ()>(miner, "stop_advanced_mining", ())
         .await
         .map_err(|e| {
@@ -265,16 +237,16 @@ async fn broadcast_stop() {
 }
 
 // ------------------------------------------------------------
-// Query stats
+// Stats
 // ------------------------------------------------------------
 
-#[derive(candid::CandidType, serde::Deserialize, Clone)]
+#[derive(CandidType, Deserialize, Clone)]
 pub struct SchedulerStats {
     pub running: bool,
-    pub total_miners: usize,
-    pub idle_miners: usize,
-    pub busy_miners: usize,
-    pub failed_miners: usize,
+    pub total_miners: u64,
+    pub idle_miners: u64,
+    pub busy_miners: u64,
+    pub failed_miners: u64,
     pub total_chunks_assigned: u64,
     pub next_nonce: u64,
     pub solution: Option<(u64, String)>,
@@ -289,20 +261,12 @@ pub fn get_scheduler_stats() -> Option<SchedulerStats> {
         let now = time();
         let uptime = (now - st.started_at) / 1_000_000_000;
 
-        let idle = st.miners.iter().filter(|m| !m.busy).count();
-        let busy = st.miners.iter().filter(|m| m.busy).count();
-        let failed = st
-        .miners
-        .iter()
-        .filter(|m| m.failures >= MAX_FAILURES)
-        .count();
-
         Some(SchedulerStats {
             running: st.running,
-            total_miners: st.miners.len(),
-             idle_miners: idle,
-             busy_miners: busy,
-             failed_miners: failed,
+            total_miners: st.miners.len() as u64,
+             idle_miners: st.miners.iter().filter(|m| !m.busy).count() as u64,
+             busy_miners: st.miners.iter().filter(|m| m.busy).count() as u64,
+             failed_miners: st.miners.iter().filter(|m| m.failures >= MAX_FAILURES).count() as u64,
              total_chunks_assigned: st.total_chunks_assigned,
              next_nonce: st.next_nonce,
              solution: st.solution_found.clone(),
@@ -311,5 +275,4 @@ pub fn get_scheduler_stats() -> Option<SchedulerStats> {
     })
 }
 
-// Export stats function for coordinator
 pub use get_scheduler_stats as stats;

@@ -205,4 +205,3 @@ pub async fn assign_one_chunk(
 pub fn get_scheduler_stats() -> Option<SchedulerStats> {
     scheduler_stats()
 }
-

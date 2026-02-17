@@ -3,6 +3,9 @@ name = "chain_controller"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
 candid = "0.10.21"
 ic-cdk = "0.13"
