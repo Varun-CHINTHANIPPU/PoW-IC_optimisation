@@ -1,0 +1,277 @@
+Benchmark Start Time: Sun Mar 22 12:21:49 PM IST 2026
+======================================
+
+[1;33m======================================
+PHASE 1: BASELINE - NAIVE MINING
+======================================\033[0m
+
+Resetting metrics and cache...
+Running naive baseline tests...
+
+Test 1.1: Naive mining (difficulty 16, 200K nonces)
+WARN: Cannot fetch Candid interface for bench_naive_instructions, sending arguments with inferred types.
+(79_120 : nat64, 479_249_455 : nat64)
+
+Test 1.2: Naive mining (difficulty 18, 200K nonces)
+WARN: Cannot fetch Candid interface for bench_naive_instructions, sending arguments with inferred types.
+(123_768 : nat64, 749_686_877 : nat64)
+
+Test 1.3: Naive mining (difficulty 20, 200K nonces)
+WARN: Cannot fetch Candid interface for bench_naive_instructions, sending arguments with inferred types.
+(200_000 : nat64, 1_211_419_806 : nat64)
+
+[0;32m✓ PHASE 1 COMPLETE[0m
+
+[1;33m======================================
+PHASE 2: SHA MID-STATE OPTIMIZATION
+======================================\033[0m
+
+Running mid-state optimized tests...
+
+Test 2.1: Midstate mining (difficulty 16, 200K nonces)
+WARN: Cannot fetch Candid interface for bench_midstate_instructions, sending arguments with inferred types.
+(12_799 : nat64, 74_798_418 : nat64)
+
+Test 2.2: Midstate mining (difficulty 18, 200K nonces)
+WARN: Cannot fetch Candid interface for bench_midstate_instructions, sending arguments with inferred types.
+(28_156 : nat64, 164_530_849 : nat64)
+
+Test 2.3: Midstate mining (difficulty 20, 200K nonces)
+WARN: Cannot fetch Candid interface for bench_midstate_instructions, sending arguments with inferred types.
+(125_781 : nat64, 734_963_072 : nat64)
+
+[0;32m✓ PHASE 2 COMPLETE[0m
+
+[1;33m======================================
+PHASE 3: LRU CACHE EFFECTIVENESS
+======================================\033[0m
+
+Test 3.1: First mining (cache MISS expected)
+Starting mining...
+First call completed
+
+Test 3.2: Same block again (cache HIT expected)
+Starting same block mining...
+Second call completed in 799ms (should be instant if cached)
+
+Cache statistics after 2 calls:
+(
+  record {
+    size = 0 : nat64;
+    total_hits = 0 : nat64;
+    hit_rate = 0.0 : float64;
+    capacity = 1_000 : nat64;
+  },
+)
+
+Test 3.3: Multiple blocks to measure realistic hit rate
+Mining 20 blocks (5 unique blocks repeated)...
+....................
+
+Final cache statistics:
+(
+  record {
+    size = 5 : nat64;
+    total_hits = 15 : nat64;
+    hit_rate = 3.0 : float64;
+    capacity = 1_000 : nat64;
+  },
+)
+
+[0;32m✓ PHASE 3 COMPLETE[0m
+
+[1;33m======================================
+PHASE 4: PARALLEL MINING (2 MINERS)
+======================================\033[0m
+
+Miner 1: uzt4z-lp777-77774-qaabq-cai
+Miner 2: umunu-kh777-77774-qaaca-cai
+
+
+Test 4.16: Parallel mining - Difficulty 16
+Starting 2-miner coordination...
+Waiting for solution...
+Results:
+(
+  opt record {
+    failed_miners = 0 : nat64;
+    next_nonce = 600_000 : nat64;
+    idle_miners = 2 : nat64;
+    solution = opt record {
+      313_803 : nat64;
+      "000094b5ba8daab77b555c8de6172c8e084a5d92a5576b1878df3f7161d52bbd";
+    };
+    total_miners = 2 : nat64;
+    total_chunks_assigned = 2 : nat64;
+    busy_miners = 0 : nat64;
+    uptime_seconds = 12 : nat64;
+    running = false;
+  },
+)
+
+Test 4.18: Parallel mining - Difficulty 18
+Starting 2-miner coordination...
+Waiting for solution...
+Results:
+(
+  opt record {
+    failed_miners = 0 : nat64;
+    next_nonce = 900_000 : nat64;
+    idle_miners = 2 : nat64;
+    solution = opt record {
+      652_055 : nat64;
+      "000031213026bfb499c2448f6ed8bfca470f8bcceba20cd98f202d0527f115f9";
+    };
+    total_miners = 2 : nat64;
+    total_chunks_assigned = 3 : nat64;
+    busy_miners = 0 : nat64;
+    uptime_seconds = 12 : nat64;
+    running = false;
+  },
+)
+
+Test 4.20: Parallel mining - Difficulty 20
+Starting 2-miner coordination...
+Waiting for solution...
+Results:
+(
+  opt record {
+    failed_miners = 0 : nat64;
+    next_nonce = 300_000 : nat64;
+    idle_miners = 2 : nat64;
+    solution = opt record {
+      187_748 : nat64;
+      "0000034fa1c3887165190183d75c44a77049cc945cf6d1a6f259a92ae50deb47";
+    };
+    total_miners = 2 : nat64;
+    total_chunks_assigned = 1 : nat64;
+    busy_miners = 0 : nat64;
+    uptime_seconds = 12 : nat64;
+    running = false;
+  },
+)
+
+[0;32m✓ PHASE 4 COMPLETE[0m
+
+[1;33m======================================
+PHASE 5: PARALLEL MINING (3 MINERS)
+======================================\033[0m
+
+Miner 1: uzt4z-lp777-77774-qaabq-cai
+Miner 2: umunu-kh777-77774-qaaca-cai
+Miner 3: ulvla-h7777-77774-qaacq-cai
+
+
+Test 5.16: Parallel mining - Difficulty 16 (3 miners)
+Starting 3-miner coordination...
+Waiting for solution...
+Results:
+(
+  opt record {
+    failed_miners = 0 : nat64;
+    next_nonce = 300_000 : nat64;
+    idle_miners = 3 : nat64;
+    solution = opt record {
+      62_847 : nat64;
+      "0000cac0e0064b3aeaed3f4c7a7fa356923666b3f036ee4990d05333c8240081";
+    };
+    total_miners = 3 : nat64;
+    total_chunks_assigned = 1 : nat64;
+    busy_miners = 0 : nat64;
+    uptime_seconds = 15 : nat64;
+    running = false;
+  },
+)
+
+Test 5.18: Parallel mining - Difficulty 18 (3 miners)
+Starting 3-miner coordination...
+Waiting for solution...
+Results:
+(
+  opt record {
+    failed_miners = 0 : nat64;
+    next_nonce = 300_000 : nat64;
+    idle_miners = 3 : nat64;
+    solution = opt record {
+      37_203 : nat64;
+      "000001cce27d6a36c93452228778609c8b0dd325595d31242560e3e3bf0d5b6d";
+    };
+    total_miners = 3 : nat64;
+    total_chunks_assigned = 1 : nat64;
+    busy_miners = 0 : nat64;
+    uptime_seconds = 15 : nat64;
+    running = false;
+  },
+)
+
+[0;32m✓ PHASE 5 COMPLETE[0m
+
+[1;33m======================================
+PHASE 6: COMPREHENSIVE METRICS
+======================================\033[0m
+
+Running extended mining session for metrics...
+Mining session 1/10...
+Mining session 2/10...
+Mining session 3/10...
+Mining session 4/10...
+Mining session 5/10...
+Mining session 6/10...
+Mining session 7/10...
+Mining session 8/10...
+Mining session 9/10...
+Mining session 10/10...
+
+Metrics Summary:
+(
+  record {
+    avg_instructions_per_hash = 5_840 : nat64;
+    total_hashes = 556_331 : nat64;
+    total_chunks = 10 : nat64;
+    avg_hashes_per_chunk = 55_633 : nat64;
+    hashes_per_second = 0 : nat64;
+    cache_hit_rate = 0.0 : float64;
+    early_termination_rate = 10.0 : float64;
+    solutions_found = 9 : nat64;
+    avg_time_per_chunk_ms = 0 : nat64;
+  },
+)
+
+CSV Metrics Export:
+(
+  "metric,value\ntotal_chunks,10\ntotal_hashes,556331\nsolutions_found,9\ncache_hits,0\ncache_misses,10\ncache_hit_rate_percent,0.00\nearly_terminations,1\nearly_termination_rate_percent,10.00\navg_time_per_chunk_ms,0\navg_hashes_per_chunk,55633\navg_instructions_per_hash,5840\nhashes_per_second,0\nmin_instructions_per_hash,5839\nmax_instructions_per_hash,5857\n",
+)
+
+Final Cache Statistics:
+(
+  record {
+    size = 14 : nat64;
+    total_hits = 15 : nat64;
+    hit_rate = 1.0714285714285714 : float64;
+    capacity = 1_000 : nat64;
+  },
+)
+
+[0;32m✓ PHASE 6 COMPLETE[0m
+
+[0;34m======================================
+BENCHMARK SUMMARY
+======================================\033[0m
+
+Benchmark End Time: Sun Mar 22 12:24:56 PM IST 2026
+
+All results saved to: benchmark_results/complete_results_20260322_122149.txt
+
+[1;33mNEXT STEPS:[0m
+1. Review the results file for all measurements
+2. Calculate speedup ratios:
+   - SHA Mid-State: naive_instr_per_hash / midstate_instr_per_hash
+   - Parallel 2x: Compare chunks_assigned between single vs 2 miners
+   - Parallel 3x: Compare chunks_assigned between single vs 3 miners
+   - Cache: Check hit_rate percentage
+
+3. Generate analysis report:
+   bash analyze_results.sh benchmark_results/complete_results_20260322_122149.txt
+
+[0;32m✓✓✓ ALL BENCHMARKS COMPLETE ✓✓✓[0m
+
